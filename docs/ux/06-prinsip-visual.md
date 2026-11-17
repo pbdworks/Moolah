@@ -6,6 +6,7 @@ Moolah harus terasa **tenang, tepercaya, dan dekat**, seperti buku kas pribadi y
 ## Tipografi
 - **Plus Jakarta Sans** untuk UI dan teks; dibuat Tokotype untuk identitas Jakarta.
 - **JetBrains Mono** untuk seluruh angka uang agar digit sejajar saat panjang nominal berbeda.
+- Plus Jakarta Sans dipilih dengan sengaja, bukan system font (SF Pro/Roboto): Moolah adalah web/offline lintas platform dan ingin menghindari default generik; JetBrains Mono memberi fungsi alignment untuk angka.
 - Body 16px/1.5, judul 28px/1.2 weight 700, saldo 40px weight 700; gunakan kontras weight 400/700.
 - Dukung pembesaran font OS 200% tanpa teks terpotong/bertumpuk; informasi tidak boleh di bawah 12px.
 
@@ -30,7 +31,13 @@ Radius kartu 12px, tombol 10px; spacing kelipatan 4: 4/8/12/16/24/32px. Satu lev
 Gunakan transisi 180ms `ease-out`; reveal kartu bertahap dengan jarak 40ms. Wajib mematikan transform dan animasi pada `prefers-reduced-motion: reduce`.
 
 ## Aksesibilitas non-negotiable
-Kontras teks minimal 4,5:1; target sentuh 44×44px; focus-visible outline 3px ink dengan offset 3px; body 16px; font scaling 200%. “Hampir habis” dan “minus” selalu memiliki label teks, bukan warna saja. Form memakai label permanen dan status error diumumkan secara semantik.
+Kontras teks minimal 4,5:1; target sentuh minimal 44×44px (iOS) dan 48×48px untuk target Android; beri jarak antar-target minimal 8–12px. Focus-visible outline 3px ink dengan offset 3px; body 16px; font scaling 200%. Hover/active memakai perubahan warna atau opacity yang stabil, bukan scale yang menggeser layout. “Hampir habis” dan “minus” selalu memiliki label teks, bukan warna saja. Form memakai label permanen dan status error diumumkan secara semantik.
+
+## Referensi yang diadopsi
+
+- `references/mobile-navigation.md`: tiga destinasi primer, label tab selalu tampil, dan indikator aktif wajib; Catat tetap aksi global, bukan tab.
+- `references/mobile-design-SKILL.md`: target 44pt iOS/48dp Android dan jarak antar-target 8–12px.
+- `references/ui-ux-pro-max-SKILL.md`: state hover/active stabil tanpa scale, fokus keyboard terlihat, dan status tidak hanya warna.
 
 ## Bukti eksekusi
 Arah ini diterapkan pada frame Doop high-fidelity **Beranda — arah visual**, tanpa menimpa frame wireframe untuk usability test. Frame memakai token warna, Plus Jakarta Sans, JetBrains Mono, hierarchy saldo 40px, dan CTA Catat yang kontras.
