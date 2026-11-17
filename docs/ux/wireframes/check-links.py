@@ -27,7 +27,7 @@ for source in sorted(ROOT.glob('*.html')):
         if anchor:
             ids=set(__import__('re').findall(r'id="([^"]+)"',target.read_text()))
             if anchor not in ids: errors.append(f'{source.name}: missing anchor {href}')
-            if target==source and anchor==screen and not in_nav and anchor != 'riwayat': errors.append(f'{source.name}: self-link {href}')
+            if target==source and anchor==screen and not in_nav: errors.append(f'{source.name}: self-link {href}')
 if errors:
     print('\n'.join(errors)); sys.exit(1)
 print(f'OK: checked {sum(1 for _ in ROOT.glob("*.html"))} HTML files; all local links and anchors are valid.')
