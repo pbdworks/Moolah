@@ -145,7 +145,7 @@ Keputusan Moolah: gunakan pola envelope yang dikenal, tetapi beri inovasi pada r
 
 ## Keputusan untuk Moolah
 
-- **Navigasi:** bottom navigation standar: `Ringkasan`, `Kantong`, `Transaksi`; tombol aksi utama `+` untuk transaksi dan scan. Ini pilihan tegas karena pola tersebut paling mudah dikenali dan konsisten dengan Jakob's Law.
+- **Navigasi:** bottom navigation standar: `Beranda`, `Kantong`, `Riwayat`; tombol aksi utama `Catat` untuk transaksi manual dan scan. Ini pilihan tegas karena pola tersebut paling mudah dikenali dan konsisten dengan Jakob's Law. Label final mengacu ke `docs/ux/05-ia-navigasi.md`.
 - **Target jalur:** manual ≤5 tap/3 langkah; OCR berhasil ≤6 tap/3 langkah sebelum simpan, lalu koreksi inline bila confidence rendah. Angka OCR ini prinsip desain sementara, bukan benchmark (hanya satu pembanding publik yang dapat diverifikasi).
 - **Kriteria audit lanjutan:** ulangi pengukuran pada build Moolah dengan 3 task yang sama, catat median dan kegagalan, bukan hanya hitungan tap.
 
