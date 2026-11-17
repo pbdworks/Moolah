@@ -34,7 +34,7 @@ erDiagram
   POCKET { string id PK; string name; string color; int allocation_minor; string currency; datetime created_at; datetime archived_at }
   CATEGORY { string id PK; string name; bool system; datetime created_at }
   TRANSACTION { string id PK; string pocket_id FK; string category_id FK; string type; int amount_minor; string currency; date occurred_on; string merchant; string note; string source; datetime created_at; datetime updated_at }
-  OCR_RESULT { string id PK; string transaction_id FK; string raw_text; string suggested_total; string suggested_date; string suggested_merchant; int confidence; string status; datetime created_at }
+  OCR_RESULT { string id PK; string transaction_id FK; string raw_text; int suggested_total_minor; string suggested_date; string suggested_merchant; int confidence; string status; datetime created_at }
 ```
 
 ## Invariants dan persistence

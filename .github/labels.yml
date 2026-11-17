@@ -1,4 +1,5 @@
-# Referensi label repository (buat melalui GitHub settings/CLI; tidak dieksekusi di VPS)
+# Referensi label repository; GitHub tidak membaca file ini secara native. Sinkronkan lewat action atau buat label secara manual.
+# Tidak dieksekusi di VPS.
 - name: bug
   color: d73a4a
   description: Perilaku yang salah atau regresi
