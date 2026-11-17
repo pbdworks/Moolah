@@ -1,4 +1,4 @@
-# Riset UX Moolah — Fase 1
+# Riset dan Prototipe UX Moolah
 
 - [Rencana riset & instrumen](01-rencana-riset.md)
 - [Sintesis sumber sekunder](02-sintesis-sekunder.md)
