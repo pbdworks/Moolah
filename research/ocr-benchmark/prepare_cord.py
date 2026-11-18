@@ -31,7 +31,15 @@ def main():
         if isinstance(gt, str): gt = json.loads(gt)
         gt = gt.get("gt_parse", gt) if isinstance(gt, dict) else {}
         total = scalar(gt.get("total", {}).get("total_price") if isinstance(gt.get("total"), dict) else gt.get("total"))
-        manifest.append({"file": str(path), "category": "cord-v2", "source_url": "https://huggingface.co/datasets/naver-clova-ix/cord-v2", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "author": "NAVER CLOVA", "synthetic": False, "ground_truth": {"merchant": None, "date": None, "total": total, "currency": "unknown", "items": gt.get("menu", [])}})
+        menu = gt.get("menu", [])
+        # CORD has structured annotations, not a literal transcript. This proxy
+        # keeps item names/prices and total in deterministic evaluation text.
+        proxy_parts = []
+        for item in menu if isinstance(menu, list) else []:
+            if isinstance(item, dict):
+                proxy_parts.extend(str(scalar(item.get(key))) for key in ("nm", "price") if scalar(item.get(key)) is not None)
+        if total is not None: proxy_parts.append(str(total))
+        manifest.append({"file": str(path), "category": "cord-v2", "source_url": "https://huggingface.co/datasets/naver-clova-ix/cord-v2", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "author": "NAVER CLOVA", "synthetic": False, "raw_text": " ".join(proxy_parts), "ground_truth": {"merchant": None, "date": None, "total": total, "currency": "unknown", "items": menu}})
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
     if len(manifest) < args.limit: raise RuntimeError(f"Only materialized {len(manifest)} CORD samples")
 

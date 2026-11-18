@@ -12,9 +12,9 @@ Each manifest item contains `file`, `category`, provenance fields, `synthetic`, 
 python research/ocr-benchmark/run_benchmark.py
 ```
 
-The workflow runs on `workflow_dispatch`, or on pushes changing the samples/workflow. It publishes `results.json`, `report.md`, and the generated manifest as an artifact and appends the aggregate table to the job summary. PaddleOCR downloads its model on the GitHub runner; the resulting model footprint should be recorded in the report in the next measurement pass. CORD has structured totals/items but no reliable public merchant/date fields, so those fields are N/A rather than guessed. Synthetic fixtures, if present, are smoke tests and are not combined with CORD results.
+The workflow runs on `workflow_dispatch`, or on pushes changing the samples/workflow. It publishes `results.json`, `report.md`, and the generated manifest as an artifact and appends the aggregate table to the job summary. CER/WER use a clearly labelled proxy reference assembled from CORD item names/prices/total, not a literal transcript. Tesseract RSS is measured for its child process; PaddleOCR RSS is the parent process including its model. CORD has structured totals/items but no reliable public merchant/date fields, so those fields are N/A rather than guessed. Synthetic fixtures, if present, are smoke tests and are not combined with CORD results.
 
-Metrics are per sample and aggregate: CER/WER where raw text exists, exact and normalized field matching, p50/p95 latency, peak process RSS, and failures. Rupiah normalization removes formatting punctuation and non-digits. Tesseract and PaddleOCR are both best-effort per sample so one engine failure does not hide the other results.
+Metrics are per sample and aggregate: proxy CER/WER, exact and normalized field matching, p50/p95 latency, peak RSS, and failures. Rupiah normalization removes formatting punctuation and non-digits. Tesseract and PaddleOCR are both best-effort per sample so one engine failure does not hide the other results.
 
 ## Limitations and rollback
 
