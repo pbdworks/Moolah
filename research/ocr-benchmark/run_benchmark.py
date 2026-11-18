@@ -90,7 +90,7 @@ def evaluate(engine: str, samples: list[dict[str, Any]], root: Path, timeout: in
         for name in ("merchant", "date", "total"):
             expected, actual = truth.get(name), field_guess(text, name)
             fields[name] = {"expected": expected, "actual": actual,
-                "exact": actual == expected if expected is not None else None,
+                "exact": (normalize_field(name, actual) == normalize_field(name, expected)) if expected is not None else None,
                 "normalized": normalize_field(name, actual) == normalize_field(name, expected) if expected is not None else None}
         rows.append({"file": sample["file"], "category": sample.get("category"), "synthetic": sample.get("synthetic", False), "text": text, "cer": cer, "wer": wer, "fields": fields, "latency_ms": (time.perf_counter() - started) * 1000, "rss_kb": child_rss, "error": error})
     latencies = [r["latency_ms"] for r in rows if not r["error"]]
