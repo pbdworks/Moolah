@@ -24,6 +24,10 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+      - name: Install dataset tooling
+        run: python -m pip install 'datasets==3.3.2' 'Pillow>=10,<12'
+      - name: Materialize pinned CORD v2 slice
+        run: python research/ocr-benchmark/prepare_cord.py --limit 20
       - name: Install OCR engines
         run: |
           sudo apt-get update
@@ -44,3 +48,4 @@ jobs:
           path: |
             research/ocr-benchmark/results.json
             research/ocr-benchmark/report.md
+            research/receipt-samples/cord/manifest.json
