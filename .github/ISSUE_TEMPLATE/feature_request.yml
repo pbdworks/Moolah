@@ -1,0 +1,23 @@
+name: Feature request
+description: Usulan perubahan yang selaras dengan privacy-first
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah pengguna
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Usulan solusi dan acceptance criteria
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Pemeriksaan awal
+      options:
+        - label: Tidak memerlukan akun, cloud, telemetry, atau akses data pihak ketiga
