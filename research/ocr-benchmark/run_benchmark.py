@@ -96,8 +96,10 @@ def run_paddle(image: Path) -> str:
         boxes = data.get("rec_boxes", data.get("rec_polys", []))
         items = []
         for index, text in enumerate(texts):
-            box = np.asarray(boxes[index]) if index < len(boxes) else np.array([[0, index * 20], [0, index * 20], [0, index * 20], [0, index * 20]])
-            x1, y1 = box.min(axis=0); x2, y2 = box.max(axis=0)
+            box = np.asarray(boxes[index]) if index < len(boxes) else np.array([0, index * 20, 0, index * 20])
+            if box.ndim == 1 and box.size == 4: x1, y1, x2, y2 = box
+            else:
+                x1, y1 = box.min(axis=0); x2, y2 = box.max(axis=0)
             items.append((float((y1+y2)/2), float(x1), float(y2-y1), text))
         items.sort()
         rows = []
