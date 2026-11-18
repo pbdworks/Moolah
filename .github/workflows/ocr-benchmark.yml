@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install 'paddleocr==3.2.0' 'paddlepaddle==3.2.0'
       - name: Run benchmark
-        run: python research/ocr-benchmark/run_benchmark.py
+        run: python research/ocr-benchmark/run_benchmark.py --manifest research/receipt-samples/cord/manifest.json
       - name: Publish summary
         if: always()
         run: |
