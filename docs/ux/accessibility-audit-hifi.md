@@ -1,22 +1,66 @@
-# Audit aksesibilitas — frame high-fidelity Beranda
+## Audit ulang aksesibilitas high-fidelity — tiga frame
 
-Frame diaudit: `XGOStniyLt` (Doop). Audit berbasis HTML dan `inspect_frame`; uji screen reader nyata tetap perlu dilakukan pada sesi pengguna.
+**Tanggal audit:** 2026-11-18
+**Scope:** Doop canvas `lZZDl9Eagd`, frame `rCT31Sro_C` (Sisa Kantong), `NE6vwZLtzZ` (Kantong), dan `QtyerZnq1w` (OCR).
+**Metode:** inspeksi HTML frame dan `inspect_frame` setelah revisi terakhir. Kontras tidak diulang. Audit ini tidak menjalankan Tab aktual dengan browser/screen reader, tidak mengemulasikan `prefers-reduced-motion`, dan tidak menguji zoom 200% atau viewport pendek.
 
-| Area | Bukti | Dampak | Rekomendasi | Prioritas |
-|---|---|---|---|---|
-| Fokus dan nav fixed | `.nav{position:fixed;bottom:0}`; target nav 48px; `main` memiliki padding bawah 96px | Ruang bawah mencegah konten terakhir tertutup; tetap perlu uji Tab pada tinggi layar kecil/zoom 200% | Verifikasi keyboard di viewport kecil; pertahankan padding bawah ≥ tinggi nav + 24px | High |
-| Tab aktif | `nav a[aria-current=page]`; Beranda computed weight 700, tab lain 400; border bawah terracotta | State aktif dapat diumumkan dan dilihat; `page` tepat untuk navigasi halaman utama | Pertahankan label selalu tampil dan indikator non-warna | Pass |
-| Struktur heading | `h1` Beranda, `h2#recent-title` Transaksi terakhir; kartu saldo dan Kantong memakai label/`article`, bukan heading | Lompatan heading tidak menemukan setiap kartu, tetapi landmark section tetap tersedia | Bila kartu perlu navigasi langsung, tambahkan heading level 3; jangan menambah heading hanya untuk styling | Medium |
-| Reduced motion | `@media(prefers-reduced-motion:no-preference)` menerapkan animasi `.pocket`; `@media(prefers-reduced-motion:reduce)` menetapkan `animation:none`, `transition:none`, `transform:none` | Preferensi reduce mematikan animasi pocket sepenuhnya | Pertahankan pola ini dan uji computed animation dalam kedua mode | Pass |
-| CTA accessible name | CTA memiliki teks “Catat pengeluaran” dan `aria-label` dengan nilai sama | Aman, tetapi label redundan karena accessible name sudah berasal dari teks | Hapus `aria-label` atau ubah hanya bila label visual berbeda; teks terlihat sudah cukup | Low |
-| Status offline | `.offline-status[role=status]` berisi “Offline · tersimpan lokal” | Status diumumkan sebagai status, bukan hanya glyph/warna | Pertahankan teks dan role; jangan menyampaikan offline hanya dengan warna | Pass |
-| Status Kantong | `.status--safe` memakai `--color-safe`, `.status--warn` memakai `--color-warn`; teks “Sisa aman”/“Hampir habis” | Status tidak bergantung pada warna saja; warna semantik konsisten | Pertahankan pasangan label + warna; uji kontras pada render | Pass |
-| Touch target & spacing | `nav a` min 48px, margin 4px + gap 8px; CTA min-height 44px | Target memenuhi 48dp nav dan spacing efektif 16px | Uji juga pada font scaling 200% agar reflow tidak tumpang tindih | Pass/High |
+### Konfirmasi temuan High sebelumnya
 
-## Prioritas tindak lanjut
+| Temuan sebelumnya | Status audit ulang | Bukti selector/angka | Dampak tersisa |
+|---|---|---|---|
+| Dua `aria-current="page"` pada Sisa Kantong | **LULUS** | `nav > a:nth-of-type(2)` “Kantong” adalah satu-satunya `[aria-current=page]`; computed `font-weight:700`; Beranda/Riwayat `400` | Tidak ada dua konteks aktif pada markup saat ini. Pengumuman screen reader tetap perlu uji aktual. |
+| Indikator dan aktivitas duplikat pada Sisa Kantong | **LULUS** | Satu `.ratio` per Kantong; satu `section.latest` pada y=`683`, tinggi `120px`; tidak ada duplikasi pada HTML | Urutan baca kini Makan → Transport → Aktivitas terbaru → nav; sesuai urutan visual. |
+| Progressbar ARIA hilang pada Sisa Kantong | **LULUS** | Makan: `[role=progressbar]`, `aria-valuenow="36"`, min `0`, max `100`, visual `width:36%`; Transport: `90` dan `width:90%`; masing-masing tinggi visual `6px` | Label masih menyebut angka (“36 persen terpakai”/“90 persen terpakai”), sehingga screen reader tertentu dapat mengulang angka bersama value. Ini saran copy, bukan kegagalan semantik. |
+| Simpan Kantong self-scroll/tanpa status | **SEBAGIAN — aksi lulus, status belum lulus penuh** | `#buat .cta` sekarang `href="#kantong-aktif"` + `data-doop-action="scroll-to:#kantong-aktif"`; `#kantong-aktif` memiliki `role="status" hidden` | Target tidak lagi self-scroll. Namun elemen yang `hidden` tidak berada di accessibility tree dan tidak dapat mengumumkan status saat tetap tersembunyi. Status sukses hanya akan diumumkan bila implementasi membuka/unhides elemen dan memperbarui teks; belum ada bukti itu terjadi. |
+| Aksi pemulihan OCR tanpa grup | **LULUS** | `section[role=group][aria-label="Pemulihan setelah OCR gagal"]`, rect x=`20`, y=`441`, width=`380`, height=`302`; berisi Foto lagi, Pilih foto lain, Isi manual, Batal | Grup kini punya accessible name. Aksi kamera masih berupa link dalam prototipe; pada implementasi gunakan button/file picker. |
 
-1. **High:** uji keyboard nyata pada viewport kecil dan zoom 200% untuk memastikan fixed nav tidak menutupi fokus.
-2. **Medium:** pertimbangkan heading level 3 bila kartu Kantong/Saldo menjadi tujuan navigasi langsung.
-3. **Low:** hapus `aria-label` CTA yang identik dengan teks visual untuk mengurangi redundansi.
+### Temuan baru dan catatan wajib
 
-Kontras warna mengikuti angka yang diberikan pada review Morgan; audit ini tidak mengulang perhitungan rasio.
+| Frame | Masalah | Bukti | Dampak | Perbaikan yang disarankan | Tingkat |
+|---|---|---|---|---|---|
+| `NE6vwZLtzZ` — Kantong | Status sukses `hidden` tidak dapat diumumkan dalam keadaan tersembunyi | `section#kantong-aktif[role=status][hidden]`; `inspect_frame` tidak menemukan `[role=status]` atau `#kantong-aktif` sebagai elemen visible | `role=status`/live announcement efektif hanya ketika node tersedia di accessibility tree. Jika node tetap hidden setelah simpan, pengguna screen reader tidak menerima konfirmasi. | Saat simpan berhasil, lepaskan `hidden` terlebih dahulu lalu isi/update teks status; pertahankan `role="status" aria-live="polite" aria-atomic="true"`. Jangan mengandalkan perubahan pada node yang masih hidden. | **High bila implementasi tidak meng-unhide; belum terverifikasi di prototipe** |
+| `rCT31Sro_C` — Sisa Kantong | Status urutan baca sudah diperbaiki dan tidak gagal | DOM/visual: panel Makan, panel Transport, `section.latest` “Aktivitas terbaru”, kemudian `nav`; `.latest` rect y=`683–803`, nav y=`907–980` | Aktivitas tidak lagi muncul setelah nav atau tersembunyi di bawah navigasi; pembaca layar mendapat konteks transaksi sebelum nav. | Pertahankan urutan ini. Beri accessible name pada setiap panel bila nanti menjadi region mandiri. | **Lulus inspeksi** |
+| `QtyerZnq1w` — OCR | Grup pemulihan kini bernama, tetapi judul visual “OCR gagal?” bukan heading/label terpisah yang dirujuk | `section[role=group][aria-label="Pemulihan setelah OCR gagal"]`; empat link pada y=`482`, `546`, `610`, `674` dengan tinggi `52px` | Accessible name sudah tersedia dari `aria-label`, jadi tidak gagal. Judul visual tidak perlu didengar dua kali. | Pertahankan `aria-label`, atau ganti dengan `aria-labelledby` ke id judul bila markup judul berubah. | **Lulus; saran konsistensi** |
+
+### Form dan field OCR
+
+Pada Kantong, label tetap terhubung dengan benar:
+
+- `label[for="pocket-name"]` → `input#pocket-name`, rect y=`652`, tinggi `48px`.
+- `label[for="pocket-limit"]` → `input#pocket-limit`, rect y=`742`, tinggi `48px`, `inputmode="numeric"`.
+
+`inputmode="numeric"` hanya memilih virtual keyboard numerik; pembaca layar tetap memperoleh field textbox bernama “Batas Kantong” dan placeholder “Rp 500.000”. Tidak ada `aria-describedby`, `aria-invalid`, atau error message pada markup saat ini. Itu bukan regresi dari temuan High sebelumnya karena temuan tersebut adalah status simpan, tetapi validasi error tetap harus ditambahkan saat form diimplementasikan.
+
+OCR mempertahankan relasi error: field Total memiliki `aria-invalid="true"` dan `aria-describedby="ocr-help"`, dengan `p#ocr-help` berisi “Koreksi total sebelum menyimpan.” Ini lulus inspeksi semantik. Simpan transaksi berada pada rect y=`360`, tinggi `48px`; grup pemulihan mulai y=`441`, sehingga urutan visual dan DOM konsisten.
+
+### Fokus keyboard dan fixed nav
+
+- `rCT31Sro_C`: CTA “Isi / Pindahkan” y=`316`, “Lihat transaksi” y=`594`, nav y=`907`, tinggi `73px`; tidak ada overlap pada `inspect_frame`.
+- `NE6vwZLtzZ`: input `#pocket-name` y=`652`, `#pocket-limit` y=`742`, Simpan y=`802`, aktivitas y=`874–1040`, CTA bawah y=`1128`, nav y=`1227`, tinggi `73px`; `problemCount:0`.
+- `QtyerZnq1w`: input Total y=`239`, CTA simpan y=`360`, grup aksi y=`441–743`, nav y=`1027`, tinggi `73px`; `problemCount:0`.
+
+CSS menyediakan `nav a:focus-visible,.cta:focus-visible { outline:3px solid var(--color-ink-new); outline-offset:3px }`. Namun `inspect_frame` tidak memindahkan fokus dan tidak menghasilkan computed style untuk pseudo-class `:focus-visible`. Karena itu urutan Tab dan keterlihatan outline pada nav, CTA, tautan aksi, serta input tetap **BELUM TERVERIFIKASI**. Demikian juga viewport pendek/zoom 200% dan WCAG 2.4.11 pada kondisi tersebut tetap **BELUM TERVERIFIKASI**; tidak boleh dianggap lulus hanya dari `problemCount:0`.
+
+### Reduced motion
+
+Ketiga frame memuat blok:
+
+```css
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation:none!important;
+    transition:none!important;
+    transform:none!important
+  }
+}
+```
+
+Struktur CSS mencakup `.pocket`/semua elemen dan pseudo-element, tetapi inspect tidak menyediakan emulasi media preference. Status computed `animation-name`, `transition-duration`, dan `transform` pada `prefers-reduced-motion: reduce` **BELUM TERVERIFIKASI**.
+
+### Kesimpulan dan prioritas
+
+1. **Selesaikan status simpan Kantong:** `hidden` boleh menjadi kondisi awal, tetapi implementasi wajib meng-unhide lalu mengubah teks pada `#kantong-aktif[role=status]` agar live announcement benar-benar terjadi. Ini satu-satunya catatan High yang belum dapat dinyatakan lulus.
+2. Progressbar Sisa Kantong sekarang semantik dan angka konsisten: `36% ↔ 36`, `90% ↔ 90`; pertimbangkan label non-numerik bila screen reader mengulang angka.
+3. Aksi pemulihan OCR sekarang berada dalam grup bernama dan field Total tetap memiliki relasi error yang valid.
+4. Urutan baca Sisa Kantong sudah benar: Aktivitas terbaru berada sebelum nav dan tidak duplikat.
+5. Tetap lakukan uji manual Tab/Shift+Tab, screen reader, reduced-motion computed style, viewport pendek, dan zoom 200% sebelum menyatakan audit aksesibilitas selesai.

@@ -1,43 +1,52 @@
 # Prinsip desain dan arah visual Moolah
 
-## Arah
-Moolah harus terasa **tenang, tepercaya, dan dekat**, seperti buku kas pribadi yang tetap bekerja tanpa internet. “Playful” berarti tidak kaku—bukan dekorasi seperti game. Privasi dan kontrol pengguna terlihat pada momen simpan, izin kamera, dan status offline.
+## Arah baru: calm task finance
+Moolah memakai permukaan netral terang, tinta navy, dan aksen teal untuk membangun hierarki tugas tanpa menyalin warna merek kompetitor. Arah ini merespons referensi GoPay, Jago, dan myBCA: tugas utama harus mudah dipindai, angka finansial dominan, ringkasan mendahului detail, dan warna memiliki satu peran.
 
-## Tipografi
-- **Plus Jakarta Sans** untuk UI dan teks; dibuat Tokotype untuk identitas Jakarta.
-- **JetBrains Mono** untuk seluruh angka uang agar digit sejajar saat panjang nominal berbeda.
-- Plus Jakarta Sans dipilih dengan sengaja, bukan system font (SF Pro/Roboto): Moolah adalah web/offline lintas platform dan ingin menghindari default generik; JetBrains Mono memberi fungsi alignment untuk angka.
-- Body 16px/1.5, judul 28px/1.2 weight 700, saldo 40px weight 700; gunakan kontras weight 400/700.
-- Dukung pembesaran font OS 200% tanpa teks terpotong/bertumpuk; informasi tidak boleh di bawah 12px.
+**Status bukti hue:** Thin. Riset referensi mendukung hierarki, kepadatan, dan peran warna; tidak memberikan dasar kuat untuk hue Moolah tertentu. Hue dapat diganti bila ada bukti pengguna atau uji desain yang lebih baik.
 
-## Warna buku kas
-| Token | Nilai | Kontras/tujuan |
-|---|---|---|
-| `--color-paper` | `#F7F3EA` | latar hangat |
-| `--color-card` | `#FFFDF8` | kartu; 16,48:1 vs ink |
-| `--color-ink` | `#14201C` | teks; 15,13:1 |
-| `--color-muted` | `#5A635E` | sekunder; 5,61:1 |
-| `--color-accent` | `#C2410C` | aksi; 4,68:1 |
-| `--color-safe` | `#1F6F4A` | aman; 5,53:1 |
-| `--color-warn` | `#8A5300` | hampir habis; 5,72:1 |
-| `--color-danger` | `#A02020` | minus; 6,97:1 |
+## Token visual
+| Role | Token | Nilai | Peran |
+|---|---|---|---|
+| Surface | `--color-surface-new` | `#F8FAFC` | latar netral |
+| Card | `--color-card-new` | `#FFFFFF` | ringkasan dan panel |
+| Ink | `--color-ink-new` | `#172033` | teks utama dan angka |
+| Muted | `--color-muted-new` | `#526174` | label sekunder |
+| Primary | `--color-primary-new` | `#176B87` | CTA dan tautan aksi |
+| Safe | `--color-safe-new` | `#176B5B` | status aman dan indikator proporsi |
+| Warn | `--color-warn-new` | `#8A5A00` | status hampir habis/minus |
 
-Jangan gunakan gradien ungu, biru template `#0066FF`, atau putih murni sebagai latar utama.
+Primary tidak dipakai untuk status; safe/warn tidak dipakai sebagai CTA. Semua status memiliki teks, bukan warna saja.
 
-## Bentuk, ruang, dan elevasi
-Radius kartu 12px, tombol 10px; spacing kelipatan 4: 4/8/12/16/24/32px. Satu level bayangan hangat: `0 1px 2px rgba(20,32,28,.06), 0 4px 12px rgba(20,32,28,.04)`.
+## Tipografi dan angka
+- Plus Jakarta Sans untuk UI dan teks.
+- JetBrains Mono untuk nominal agar digit mudah dibandingkan.
+- Body 16px, label 14px, judul 28px, angka utama 40px.
+- Weight 400/700 membedakan informasi sekunder dan aksi/angka penting.
 
-## Motion
-Gunakan transisi 180ms `ease-out`; reveal kartu bertahap dengan jarak 40ms. Wajib mematikan transform dan animasi pada `prefers-reduced-motion: reduce`.
+## Spacing, bentuk, dan target
+- Spacing: 4/8/12/16/24px.
+- Radius: 8px untuk kontrol, 14px untuk panel.
+- Target sentuh minimum 48px, jarak antartarget minimal 8–12px.
+- Kontras normal minimal 4.5:1; palet B1 telah diverifikasi lulus AA.
 
-## Aksesibilitas non-negotiable
-Kontras teks minimal 4,5:1; target sentuh minimal 44×44px (iOS) dan 48×48px untuk target Android; beri jarak antar-target minimal 8–12px. Focus-visible outline 3px ink dengan offset 3px; body 16px; font scaling 200%. Hover/active memakai perubahan warna atau opacity yang stabil, bukan scale yang menggeser layout. “Hampir habis” dan “minus” selalu memiliki label teks, bukan warna saja. Form memakai label permanen dan status error diumumkan secara semantik.
+## Hierarki layar
+1. Ringkasan atau status utama.
+2. Angka finansial dan proporsi Kantong.
+3. Aktivitas/transaksi terbaru.
+4. Aksi utama yang jelas sebagai aksi, bukan tab.
+5. Detail dan pemulihan error.
 
-## Referensi yang diadopsi
+Beranda harus menjelaskan rekonsiliasi total, Kantong harus dapat dikelola, dan Riwayat harus mendahulukan filter lalu daftar transaksi. Format data lintas layar wajib konsisten.
 
-- `references/mobile-navigation.md`: tiga destinasi primer, label tab selalu tampil, dan indikator aktif wajib; Catat tetap aksi global, bukan tab.
-- `references/mobile-design-SKILL.md`: target 44pt iOS/48dp Android dan jarak antar-target 8–12px.
-- `references/ui-ux-pro-max-SKILL.md`: state hover/active stabil tanpa scale, fokus keyboard terlihat, dan status tidak hanya warna.
+## Motion dan aksesibilitas
+Gunakan motion singkat hanya untuk perubahan state. `prefers-reduced-motion: reduce` mematikan animation, transition, dan transform. Fokus keyboard harus terlihat dengan outline 3px. Form memakai label permanen dan pesan error/status semantik. Progress Kantong memakai `role="progressbar"` dengan nilai 0–100 yang cocok dengan lebar visual.
 
-## Bukti eksekusi
-Arah ini diterapkan pada frame Doop high-fidelity **Beranda — arah visual**, tanpa menimpa frame wireframe untuk usability test. Frame memakai token warna, Plus Jakarta Sans, JetBrains Mono, hierarchy saldo 40px, dan CTA Catat yang kontras.
+## Dasar keputusan
+- Hierarki angka dan ringkasan sebelum detail: observasi lintas Jago/myBCA, Strong.
+- Shortcut berbasis tugas: observasi terbatas GoPay, Thin.
+- Kantong sebagai objek yang dapat dikelola: pola Pocket Jago/myBCA dan prinsip produk Moolah, Strong.
+- Hue surface/ink/teal Moolah: keputusan desain sementara, Thin; jangan diperlakukan sebagai temuan kompetitor.
+
+## Status
+Arah baru diterapkan pada frame B1 Beranda `SEufifNC2w` dan Kantong `NE6vwZLtzZ`, serta B2 Manual, OCR, Sisa Kantong, dan Riwayat. Frame lama tetap arsip pembanding dan tidak dihapus.
