@@ -2,6 +2,8 @@
 """Compare Tesseract and PaddleOCR against a receipt manifest."""
 from __future__ import annotations
 import argparse, json, re, resource, statistics, subprocess, tempfile, time
+import cv2
+import numpy as np
 from pathlib import Path
 from typing import Any
 
@@ -56,9 +58,26 @@ def field_guess(text: str, name: str) -> str | int | None:
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     return lines[0] if lines else None
 
+def preprocess(image: Path) -> Path:
+    source = cv2.imread(str(image), cv2.IMREAD_GRAYSCALE)
+    if source is None: raise ValueError(f"cannot read {image}")
+    # Symmetric crop/contrast/deskew preprocessing for both engines.
+    points = cv2.findNonZero(cv2.threshold(source, 245, 255, cv2.THRESH_BINARY_INV)[1])
+    if points is not None:
+        x, y, w, h = cv2.boundingRect(points); source = source[max(0, y-8):y+h+8, max(0, x-8):x+w+8]
+    source = cv2.normalize(source, None, 0, 255, cv2.NORM_MINMAX)
+    coords = np.column_stack(np.where(source < 220))
+    if len(coords) > 20:
+        angle = cv2.minAreaRect(coords[:, ::-1].astype(np.float32))[-1]
+        angle = angle + 90 if angle < -45 else angle
+        if abs(angle) < 15:
+            h, w = source.shape; matrix = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
+            source = cv2.warpAffine(source, matrix, (w, h), borderValue=255)
+    output = Path(tempfile.mkstemp(suffix=".png")[1]); cv2.imwrite(str(output), source); return output
+
 def run_tesseract(image: Path, lang: str, timeout: int) -> tuple[str, int | None]:
     with tempfile.NamedTemporaryFile() as rss_file:
-        result = subprocess.run(["/usr/bin/time", "-f", "%M", "-o", rss_file.name, "tesseract", str(image), "stdout", "-l", lang], check=True, text=True, capture_output=True, timeout=timeout)
+        result = subprocess.run(["/usr/bin/time", "-f", "%M", "-o", rss_file.name, "tesseract", str(image), "stdout", "-l", lang, "--psm", "6"], check=True, text=True, capture_output=True, timeout=timeout)
         try: rss = int(Path(rss_file.name).read_text().strip())
         except (ValueError, OSError): rss = None
     return result.stdout, rss
@@ -73,7 +92,19 @@ def run_paddle(image: Path) -> str:
         data = page.json if hasattr(page, "json") else page
         if isinstance(data, str): data = json.loads(data)
         data = data.get("res", data) if isinstance(data, dict) else {}
-        lines.extend(str(x) for x in data.get("rec_texts", []) if x)
+        texts = [str(x) for x in data.get("rec_texts", []) if x]
+        boxes = data.get("rec_boxes", data.get("rec_polys", []))
+        items = []
+        for index, text in enumerate(texts):
+            box = np.asarray(boxes[index]) if index < len(boxes) else np.array([[0, index * 20], [0, index * 20], [0, index * 20], [0, index * 20]])
+            x1, y1 = box.min(axis=0); x2, y2 = box.max(axis=0)
+            items.append((float((y1+y2)/2), float(x1), float(y2-y1), text))
+        items.sort()
+        rows = []
+        for item in items:
+            if not rows or abs(item[0] - rows[-1][0]) > max(8, item[2] * 0.6): rows.append([item[0], [item]])
+            else: rows[-1][1].append(item)
+        lines.extend(" ".join(item[3] for item in sorted(row[1], key=lambda x: x[1])) for row in rows)
     return "\n".join(lines)
 run_paddle.ocr = None  # type: ignore[attr-defined]
 
@@ -82,11 +113,15 @@ def evaluate(engine: str, samples: list[dict[str, Any]], root: Path, timeout: in
     for sample in samples:
         image = root / sample["file"]
         started, error, text, child_rss = time.perf_counter(), None, "", None
+        prepared = None
         try:
-            if engine == "tesseract": text, child_rss = run_tesseract(image, "eng+ind", timeout)
-            else: text = run_paddle(image)
+            prepared = preprocess(image)
+            if engine == "tesseract": text, child_rss = run_tesseract(prepared, "eng+ind", timeout)
+            else: text = run_paddle(prepared)
         except subprocess.TimeoutExpired: error = "timeout"
         except Exception as exc: error = f"{type(exc).__name__}: {exc}"
+        finally:
+            if prepared: prepared.unlink(missing_ok=True)
         truth = sample.get("ground_truth", {})
         raw_truth = sample.get("raw_text") or truth.get("raw_text")
         cer = wer = cer_bounded = wer_bounded = None
